@@ -17,9 +17,9 @@ services:
   database:
     image: postgres:${POSTGRES_VERSION-16}-alpine
     environment:
-      POSTGRES_DB: checkdown
-      POSTGRES_USER: checkdown-server
-      POSTGRES_PASSWORD: checkdown-server
+      POSTGRES_DB: ${DATABASE_NAME-checkdown}
+      POSTGRES_USER: ${DATABASE_USER-checkdownserver}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD-checkdownserver}
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
@@ -32,9 +32,9 @@ services:
       DATABASE_ENGINE: django.db.backends.postgresql
       DATABASE_HOST: database
       DATABASE_PORT: 5432
-      DATABASE_USER: checkdown-server
-      DATABASE_PASSWORD: checkdown-server
-      DATABASE_NAME: checkdown
+      DATABASE_USER: ${DATABASE_USER-checkdownserver}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD-checkdownserver}
+      DATABASE_NAME: ${DATABASE_NAME-checkdown}
       DJANGO_SECRET_KEY_FILE: /run/secrets/DJANGO_SECRET_KEY
       DJANGO_SUPERUSER_USERNAME: ${DJANGO_SUPERUSER_USERNAME-admin}
       DJANGO_SUPERUSER_EMAIL: ${DJANGO_SUPERUSER_EMAIL-admin@example.com}
@@ -74,7 +74,7 @@ volumes:
 configs:
   caddyfile:
     content: |-
-      localhost {
+      ${CHECKDOWN_HOSTNAME-localhost} {
         root * /usr/share/caddy
 
         reverse_proxy /api/* app:8000
