@@ -1,0 +1,9 @@
+.venv
+.vscode
+db.sqlite3
+Dockerfile
+__pycache__
+*.pyc
+node_modules
+.secret_key
+.env

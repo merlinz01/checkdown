@@ -1,0 +1,11 @@
+{
+  "python.analysis.typeCheckingMode": "basic",
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+
+  "prettier.configPath": "tasks/frontend/.prettierrc.json",
+  "prettier.prettierPath": "tasks/frontend/node_modules/prettier"
+}

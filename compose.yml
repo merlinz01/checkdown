@@ -1,0 +1,95 @@
+name: checkdown
+
+services:
+  staticfiles-setup:
+    image: merlinz01/checkdown
+    volumes:
+      - static-files:/app/staticfiles/
+    user: root
+    entrypoint:
+      [
+        '/bin/bash',
+        '-c',
+        'source .venv/bin/activate && python manage.py collectstatic --noinput && cp -r /app/tasks/frontend/dist/* /app/staticfiles/',
+      ]
+    restart: 'no'
+
+  database:
+    image: postgres:${POSTGRES_VERSION-16}-alpine
+    environment:
+      POSTGRES_DB: checkdown
+      POSTGRES_USER: checkdown-server
+      POSTGRES_PASSWORD: checkdown-server
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  app:
+    image: merlinz01/checkdown
+    environment:
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS-localhost}
+      CSRF_COOKIE_SECURE: ${CSRF_COOKIE_SECURE-true}
+      CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS-https://localhost}
+      DATABASE_ENGINE: django.db.backends.postgresql
+      DATABASE_HOST: database
+      DATABASE_PORT: 5432
+      DATABASE_USER: checkdown-server
+      DATABASE_PASSWORD: checkdown-server
+      DATABASE_NAME: checkdown
+      DJANGO_SECRET_KEY_FILE: /run/secrets/DJANGO_SECRET_KEY
+      DJANGO_SUPERUSER_USERNAME: ${DJANGO_SUPERUSER_USERNAME-admin}
+      DJANGO_SUPERUSER_EMAIL: ${DJANGO_SUPERUSER_EMAIL-admin@example.com}
+      DJANGO_SUPERUSER_PASSWORD: ${DJANGO_SUPERUSER_PASSWORD-}
+      LOG_LEVEL: ${LOG_LEVEL-WARNING}
+      SECURE_HSTS_INCLUDE_SUBDOMAINS: ${SECURE_HSTS_INCLUDE_SUBDOMAINS-true}
+      SECURE_HSTS_PRELOAD: ${SECURE_HSTS_PRELOAD-false}
+      SECURE_HSTS_SECONDS: ${SECURE_HSTS_SECONDS-0}
+      SECURE_SSL_REDIRECT: ${SECURE_SSL_REDIRECT-false}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE-true}
+    depends_on:
+      - database
+    secrets:
+      - DJANGO_SECRET_KEY
+
+  front-server:
+    image: caddy:${CADDY_VERSION-2}-alpine
+    restart: 'unless-stopped'
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - '80:80'
+      - '443:443'
+      - '443:443/udp'
+    volumes:
+      - caddy-data:/data
+      - static-files:/usr/share/caddy/
+    configs:
+      - source: caddyfile
+        target: /etc/caddy/Caddyfile
+
+volumes:
+  postgres-data:
+  static-files:
+  caddy-data:
+
+configs:
+  caddyfile:
+    content: |-
+      localhost {
+        root * /usr/share/caddy
+
+        reverse_proxy /api/* app:8000
+        reverse_proxy /admin/* app:8000
+
+        file_server
+
+        @anypath {
+            not file
+            not path /api/*
+            not path /admin/*
+        }
+        rewrite @anypath /index.html
+      }
+
+secrets:
+  DJANGO_SECRET_KEY:
+    file: .secret_key

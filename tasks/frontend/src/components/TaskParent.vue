@@ -1,0 +1,31 @@
+<template>
+  <v-breadcrumbs class="py-1 px-0 v-label flex-wrap" divider=">" :items="breadcrumbs" />
+</template>
+
+<script setup lang="ts">
+import type { Task } from '@/types'
+
+const parentTasks = ref<Task[]>([])
+const breadcrumbs = computed(() => {
+  const b: any[] = parentTasks.value.map((task) => ({
+    title: task.name,
+    to: `/tasks/${task.pk}/`,
+  }))
+  b.unshift({ title: 'Tasks', to: '/tasks/' })
+  b.push({ title: props.task.name })
+  return b
+})
+const props = defineProps<{
+  task: Task
+}>()
+
+watchEffect(async () => {
+  var parent = props.task.parent
+  while (parent) {
+    const response = await fetch(`/api/tasks/tasks/${parent}/`)
+    const data = await response.json()
+    parentTasks.value.unshift(data)
+    parent = data.parent
+  }
+})
+</script>
