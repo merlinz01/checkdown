@@ -2,7 +2,7 @@ name: checkdown
 
 services:
   staticfiles-setup:
-    image: merlinz01/checkdown
+    image: merlinz01/checkdown:latest
     volumes:
       - static-files:/app/staticfiles/
     user: root
@@ -24,7 +24,7 @@ services:
       - postgres-data:/var/lib/postgresql/data
 
   app:
-    image: merlinz01/checkdown
+    image: merlinz01/checkdown:latest
     environment:
       ALLOWED_HOSTS: ${ALLOWED_HOSTS-localhost}
       CSRF_COOKIE_SECURE: ${CSRF_COOKIE_SECURE-true}

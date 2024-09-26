@@ -72,7 +72,7 @@ Checkdown is published as a Docker image on Docker Hub. To deploy the applicatio
 1. Download the Docker Compose configuration file:
 
 ```bash
-wget https://raw.githubusercontent.com/merlinz01/checkdown/main/docker-compose.yml
+wget https://raw.githubusercontent.com/merlinz01/checkdown/main/compose.yml
 ```
 
 2. Create a `.env` file with the following environment variables:
