@@ -13,9 +13,26 @@ from rest_framework import (
     response,
     views as rest_views,
 )
-from django_filters import rest_framework as filters
+from django_filters import rest_framework as filters, BooleanFilter, FilterSet
 
 from .serializers import TaskSerializer, StatusSerializer, UserSerializer
+
+
+class TaskFilter(FilterSet):
+    toplevel = BooleanFilter(field_name="parent", lookup_expr="isnull")
+
+    class Meta:
+        model = Task
+        fields = [
+            "name",
+            "description",
+            "status",
+            "assignee",
+            "due_date",
+            "priority",
+            "parent",
+            "toplevel",
+        ]
 
 
 class TaskViewSet(viewsets.ModelViewSet):
@@ -23,29 +40,11 @@ class TaskViewSet(viewsets.ModelViewSet):
     API endpoint that allows tasks to be viewed or edited.
     """
 
-    queryset = Task.objects.all().order_by("-due_date")
+    queryset = Task.objects.all().order_by("-due_date", "name")
     serializer_class = TaskSerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [filters.DjangoFilterBackend]
-    filterset_fields = [
-        "name",
-        "description",
-        "status",
-        "assignee",
-        "due_date",
-        "priority",
-        "parent",
-    ]
-
-    def get_queryset(self):
-        qs = self.queryset
-        closed = self.request.GET.get("closed")
-        if closed:
-            if closed.lower() == "true":
-                qs = qs.filter(status__closed=True)
-            else:
-                qs = qs.filter(Q(status=None) | Q(status__closed=False))
-        return qs
+    filterset_class = TaskFilter
 
 
 class StatusViewSet(viewsets.ModelViewSet):

@@ -58,7 +58,7 @@
           class="mt-2"
         />
         <vue-showdown
-          :markdown="task.description"
+          :markdown="task.description || '(No description)'"
           v-if="!editingDescription"
           @click="editingDescription = true"
           id="description"
@@ -90,7 +90,7 @@
           </div>
         </v-form>
         <div class="d-flex align-center">
-          <v-label for="due_date" text="Due Date:" class="me-4" />
+          <v-label for="due_date" text="Due Date:" style="width: 6em" />
           <v-menu offset-y :close-on-content-click="false" v-model="editingDueDate">
             <template #activator="{ props }">
               <v-btn
@@ -99,12 +99,12 @@
                 v-bind="props"
                 variant="flat"
                 color="grey"
+                id="due_date"
               ></v-btn>
             </template>
             <v-form class="d-flex flex-column" @submit.prevent="saveDueDate()">
               <v-date-picker
                 v-model="newDueDate"
-                id="due_date"
                 show-adjacent-months
                 header="No due date"
                 color="surface-light"
@@ -125,7 +125,7 @@
           </v-menu>
         </div>
         <div class="d-flex align-center">
-          <v-label for="assignee" text="Assignee:" class="me-4" />
+          <v-label for="assignee" text="Assignee:" style="width: 6em" />
           <v-menu offset-y v-if="!editingName">
             <template #activator="{ props }">
               <UserChip :user="task.assignee" v-bind="props" class="mx-4 me-auto" id="assignee" />
@@ -134,13 +134,19 @@
           </v-menu>
         </div>
         <div class="d-flex align-center">
-          <v-label for="priority" text="Priority:" class="me-8" />
+          <v-label for="priority" text="Priority:" style="width: 6em" />
           <v-select
             v-model="task.priority"
             :items="priorities"
+            :item-props="
+              (item: any) => {
+                return { style: `color: ${item.color}` }
+              }
+            "
             id="priority"
             density="compact"
             class="mx-4 flex-grow-0"
+            variant="outlined"
             hide-details
             :style="{ color: priorities.find((p) => p.value === task.priority)?.color }"
             @update:model-value="savePriority"
@@ -154,9 +160,10 @@
 </template>
 
 <script setup lang="ts">
-import getCSRFToken from '@/csrftoken'
+import useNotify from '@/stores/notify'
 import { priorities, type Task } from '@/types'
 import { VueShowdown } from 'vue-showdown'
+import axios from '@/plugins/axios'
 
 const props = defineProps<{
   task: Task
@@ -168,82 +175,62 @@ const newDescription = ref(props.task.description)
 const editingDueDate = ref(false)
 const newDueDate = ref(props.task._due_date)
 const router = useRouter()
+const notify = useNotify()
 
 function saveStatus(status: number) {
-  fetch(`/api/tasks/tasks/${props.task.pk}/`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': getCSRFToken(),
-    },
-    body: JSON.stringify({ status }),
+  axios.patch(`/api/tasks/tasks/${props.task.pk}/`, { status: status }).catch((err: any) => {
+    notify.error(err)
   })
 }
 
 function saveName() {
-  fetch(`/api/tasks/tasks/${props.task.pk}/`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': getCSRFToken(),
-    },
-    body: JSON.stringify({ name: newName.value }),
-  }).then(() => {
-    editingName.value = false
-    props.task.name = newName.value
-  })
+  axios
+    .patch(`/api/tasks/tasks/${props.task.pk}/`, { name: newName.value })
+    .then(() => {
+      editingName.value = false
+      props.task.name = newName.value
+    })
+    .catch((err: any) => {
+      notify.error(err)
+    })
 }
 
 function saveDescription() {
-  fetch(`/api/tasks/tasks/${props.task.pk}/`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': getCSRFToken(),
-    },
-    body: JSON.stringify({ description: newDescription.value }),
-  }).then(() => {
-    editingDescription.value = false
-    props.task.description = newDescription.value
-  })
+  axios
+    .patch(`/api/tasks/tasks/${props.task.pk}/`, { description: newDescription.value })
+    .then(() => {
+      editingDescription.value = false
+      props.task.description = newDescription.value
+    })
+    .catch((err: any) => {
+      notify.error(err)
+    })
 }
 
 function saveDueDate() {
-  fetch(`/api/tasks/tasks/${props.task.pk}/`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': getCSRFToken(),
-    },
-    body: JSON.stringify({
+  axios
+    .patch(`/api/tasks/tasks/${props.task.pk}/`, {
       due_date: newDueDate.value?.toISOString().substring(0, 10) || null,
-    }),
-  }).then(() => {
-    editingDueDate.value = false
-    props.task._due_date = newDueDate.value
-    props.task.due_date = newDueDate.value?.toISOString().substring(0, 10)
-  })
+    })
+    .then(() => {
+      editingDueDate.value = false
+      props.task._due_date = newDueDate.value
+      props.task.due_date = newDueDate.value?.toISOString().substring(0, 10)
+    })
+    .catch((err: any) => {
+      notify.error(err)
+    })
 }
 
 function saveAssignee(assignee: number | null) {
-  fetch(`/api/tasks/tasks/${props.task.pk}/`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': getCSRFToken(),
-    },
-    body: JSON.stringify({ assignee }),
+  axios.patch(`/api/tasks/tasks/${props.task.pk}/`, { assignee }).catch((err: any) => {
+    notify.error(err)
   })
 }
 
 function savePriority(priority: number) {
-  fetch(`/api/tasks/tasks/${props.task.pk}/`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': getCSRFToken(),
-    },
-    body: JSON.stringify({ priority }),
+  axios.patch(`/api/tasks/tasks/${props.task.pk}/`, { priority }).catch((err: any) => {
+    notify.error(err)
   })
 }
 
@@ -251,14 +238,14 @@ function deleteTask() {
   if (!confirm('Are you sure you want to delete this task and all sub-tasks?')) {
     return
   }
-  fetch(`/api/tasks/tasks/${props.task.pk}/`, {
-    method: 'DELETE',
-    headers: {
-      'X-CSRFToken': getCSRFToken(),
-    },
-  }).then(() => {
-    router.push('/')
-  })
+  axios
+    .delete(`/api/tasks/tasks/${props.task.pk}/`)
+    .then(() => {
+      router.push('/')
+    })
+    .catch((err: any) => {
+      notify.error(err)
+    })
 }
 </script>
 

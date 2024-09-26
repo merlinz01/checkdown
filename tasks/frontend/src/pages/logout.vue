@@ -5,7 +5,7 @@
 <script setup lang="ts">
 import useNotify from '@/stores/notify'
 import { useUserStore } from '@/stores/user'
-import axios, { AxiosResponse } from 'axios'
+import axios from 'axios'
 
 const router = useRouter()
 const notify = useNotify()
@@ -14,7 +14,7 @@ const user = useUserStore()
 function logout() {
   axios
     .post('/api/tasks/logout/')
-    .then((response: AxiosResponse) => {
+    .then(() => {
       user.user = null
       router.push({ path: '/login' })
     })

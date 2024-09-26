@@ -4,6 +4,7 @@
 
 <script setup lang="ts">
 import type { Task } from '@/types'
+import axios from '@/plugins/axios'
 
 const parentTasks = ref<Task[]>([])
 const breadcrumbs = computed(() => {
@@ -22,8 +23,8 @@ const props = defineProps<{
 watchEffect(async () => {
   var parent = props.task.parent
   while (parent) {
-    const response = await fetch(`/api/tasks/tasks/${parent}/`)
-    const data = await response.json()
+    const response = await axios.get(`/api/tasks/tasks/${parent}/`)
+    const data = response.data
     parentTasks.value.unshift(data)
     parent = data.parent
   }

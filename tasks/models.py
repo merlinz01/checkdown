@@ -22,6 +22,10 @@ class Task(models.Model):
     def closed(self):
         return self.status.closed if self.status else False
 
+    @property
+    def nsubtasks(self):
+        return Task.objects.filter(parent=self).count()
+
 
 class Status(models.Model):
     name = models.CharField(max_length=256)

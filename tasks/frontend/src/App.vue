@@ -19,6 +19,16 @@
         title="Toggle color theme"
         class="my-0"
         :rounded="false"
+        color="primary"
+        variant="text"
+      />
+      <v-btn
+        href="/admin/"
+        icon="mdi-cog"
+        density="comfortable"
+        variant="tonal"
+        color="secondary"
+        title="Checkdown Administration"
       />
       <v-spacer />
       <v-menu v-if="user.user">

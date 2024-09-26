@@ -13,7 +13,8 @@
 
 <script setup lang="ts">
 import type { User } from '@/types'
-import axios, { AxiosResponse } from 'axios'
+import { AxiosResponse } from 'axios'
+import axios from '@/plugins/axios'
 
 const users = ref<User[]>([])
 const user = defineModel<number | null>()

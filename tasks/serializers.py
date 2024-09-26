@@ -17,6 +17,8 @@ class TaskSerializer(serializers.ModelSerializer):
             "parent",
             "created",
             "updated",
+            "closed",
+            "nsubtasks",
         ]
 
 

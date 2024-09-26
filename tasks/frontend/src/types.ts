@@ -10,6 +10,8 @@ interface Task {
   priority: number
   created: string
   updated: string
+  closed: boolean
+  nsubtasks: number
 }
 
 interface Status {
@@ -37,7 +39,7 @@ const priorities = [
   {
     title: 'Normal',
     value: 0,
-    color: '--var(--v-primary)',
+    color: '',
   },
   {
     title: 'Medium',

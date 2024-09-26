@@ -58,7 +58,7 @@
     <v-data-table
       id="task-table"
       :headers="headers"
-      :items="items"
+      :items="filteredItems"
       :items-per-page="-1"
       class="elevation-1"
       hide-default-footer
@@ -101,7 +101,8 @@
 <script setup lang="ts">
 import { priorities, type Task } from '@/types'
 import StatusChip from './StatusChip.vue'
-import axios, { AxiosError } from 'axios'
+import { AxiosError } from 'axios'
+import axios from '@/plugins/axios'
 import useNotify from '@/stores/notify'
 
 const props = withDefaults(
@@ -117,7 +118,11 @@ const props = withDefaults(
 )
 const router = useRouter()
 const headers: any[] = [
-  { key: 'name', title: 'Task' },
+  {
+    key: 'name',
+    title: 'Task',
+    value: (t: Task) => t.name + (t.nsubtasks === 0 ? '' : ` [${t.nsubtasks}]`),
+  },
   { key: 'status', title: 'Status' },
   { key: 'assignee', title: 'Assignee' },
   {
@@ -129,6 +134,16 @@ const headers: any[] = [
   { key: 'due_date', title: 'Due Date' },
 ]
 const items = ref<Task[]>([])
+const filteredItems = computed(() => {
+  var sc
+  if (props.showClosed !== null) {
+    sc = props.showClosed
+  } else {
+    sc = showClosedSwitch.value
+  }
+  if (sc) return items.value
+  return items.value.filter((v: Task) => !v.closed)
+})
 const showNewTask = ref(false)
 const newTaskName = ref('')
 const search = ref('')
@@ -145,8 +160,8 @@ watchEffect(() => {
   axios
     .get('/api/tasks/tasks/', {
       params: {
-        parent: props.parent,
-        closed: sc ? undefined : false,
+        parent: props.parent || undefined,
+        toplevel: props.parent ? undefined : true,
       },
     })
     .then((response) => {
@@ -154,7 +169,7 @@ watchEffect(() => {
     })
     .catch((err: AxiosError) => {
       items.value = []
-      err && notify.error(err.message)
+      err && notify.error(err)
     })
 })
 
@@ -178,8 +193,8 @@ function saveNewTask() {
       notify.success(`Task "${newTaskName.value}" created.`)
       newTaskName.value = ''
     })
-    .catch((err: Error) => {
-      notify.error(String(err))
+    .catch((err: any) => {
+      notify.error(err)
     })
 }
 </script>

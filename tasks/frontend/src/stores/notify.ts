@@ -39,7 +39,11 @@ const useNotify = defineStore('notify', () => {
   }
 
   function notify(message: any, type: Notification['type'], options?: NotificationOptions) {
-    addNotification({ message: String(message), type, options })
+    var themessage = String(message)
+    if (typeof message == 'object' && themessage === '[object Object]') {
+      themessage = JSON.stringify(message)
+    }
+    addNotification({ message: themessage, type, options })
   }
 
   function success(message: any, options?: NotificationOptions) {
@@ -54,8 +58,8 @@ const useNotify = defineStore('notify', () => {
     notify(message, 'warning', options)
   }
 
-  function error(message: any, options?: NotificationOptions) {
-    notify(message, 'error', options)
+  function error(message: Error | any, options?: NotificationOptions) {
+    notify(message?.message || message, 'error', options)
   }
 
   return {

@@ -15,7 +15,8 @@
 
 <script setup lang="ts">
 import type { Status } from '@/types'
-import axios, { AxiosResponse } from 'axios'
+import { AxiosResponse } from 'axios'
+import axios from '@/plugins/axios'
 
 const statuses = ref<Status[]>([])
 const status = defineModel<number>()

@@ -5,12 +5,13 @@
     :text="theuser.username"
     prepend-icon="mdi-account"
   />
-  <v-chip color="grey" variant="text" v-else text="None" />
+  <v-chip color="grey" variant="tonal" v-else text="None" />
 </template>
 
 <script setup lang="ts">
 import type { User } from '@/types'
-import axios, { AxiosResponse } from 'axios'
+import { AxiosResponse } from 'axios'
+import axios from '@/plugins/axios'
 
 const props = defineProps<{
   user?: number
