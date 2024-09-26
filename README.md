@@ -79,6 +79,8 @@ wget https://raw.githubusercontent.com/merlinz01/checkdown/main/compose.yml
 
 ```bash
 CHECKDOWN_HOSTNAME=your.hostname.com
+ALLOWED_HOSTS=your.hostname.com
+CSRF_TRUSTED_ORIGINS=https://your.hostname.com
 ```
 
 3. Create a `.secret_key` file with a random secret key:
