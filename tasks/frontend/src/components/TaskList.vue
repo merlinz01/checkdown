@@ -152,11 +152,6 @@ const notify = useNotify()
 const showClosedSwitch = ref(false)
 
 watchEffect(() => {
-  var sc
-  if (props.showClosed !== null) {
-    sc = props.showClosed
-  }
-  sc = showClosedSwitch.value
   axios
     .get('/api/tasks/tasks/', {
       params: {
