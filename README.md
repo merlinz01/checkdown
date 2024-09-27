@@ -92,7 +92,7 @@ openssl rand -base64 64 > .secret_key
 4. Set the Django superuser password as an environment variable for the initial run:
 
 ```bash
-read -s -p "Enter Django superuser password: " DJANGO_SUPERUSER_PASSWORD
+export DJANGO_SUPERUSER_PASSWORD=your_password
 ```
 
 5. Run Docker Compose to start the application:
