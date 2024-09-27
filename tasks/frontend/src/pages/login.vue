@@ -14,7 +14,8 @@
 <script setup lang="ts">
 import useNotify from '@/stores/notify'
 import { useUserStore } from '@/stores/user'
-import axios, { AxiosResponse } from 'axios'
+import axios, { AxiosError, AxiosResponse } from 'axios'
+import { getResponseErrorMessage } from '@/plugins/axios'
 
 const username = ref('')
 const password = ref('')
@@ -33,8 +34,8 @@ function login() {
       router.push({ path: '/' })
       user.user = response.data.user
     })
-    .catch((err: Error) => {
-      err && notify.error(err)
+    .catch((err: AxiosError) => {
+      err && notify.error(getResponseErrorMessage(err))
     })
 }
 

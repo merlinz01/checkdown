@@ -3,9 +3,10 @@
 </template>
 
 <script setup lang="ts">
+import { getResponseErrorMessage } from '@/plugins/axios'
 import useNotify from '@/stores/notify'
 import { useUserStore } from '@/stores/user'
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 
 const router = useRouter()
 const notify = useNotify()
@@ -18,8 +19,8 @@ function logout() {
       user.user = null
       router.push({ path: '/login' })
     })
-    .catch((err: Error) => {
-      err && notify.error(err)
+    .catch((err: AxiosError) => {
+      err && notify.error(getResponseErrorMessage(err))
     })
 }
 

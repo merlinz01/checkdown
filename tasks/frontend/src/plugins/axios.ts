@@ -19,15 +19,19 @@ export function registerAxios(router: Router) {
       router.push('/login')
       return Promise.reject(null)
     }
-    if (!error.response) {
-      return Promise.reject(error)
-    }
-    if (!error.response.data) {
-      return Promise.reject(error.toJSON())
-    }
-    if (!error.response.data.detail) {
-      return Promise.reject(error.response.data)
-    }
-    return Promise.reject(error.response.data.detail)
+    return Promise.reject(getResponseErrorMessage(error))
   })
+}
+
+export function getResponseErrorMessage(error: AxiosError<any, any>) {
+  if (!error.response) {
+    return error
+  }
+  if (!error.response.data) {
+    return error.toJSON()
+  }
+  if (!error.response.data.detail) {
+    return error.response.data
+  }
+  return error.response.data.detail
 }
